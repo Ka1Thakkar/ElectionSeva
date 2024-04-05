@@ -33,7 +33,7 @@ const Map = ({ coordinates, layer, mode }) => {
                 console.log("inside getSuggestions");
                 // const resHistoricalMonuments = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=200000&q=hospital&apiKey=v3oh-ib_9QUwuc4GFdDzm8I21nq41fVaTyjro6eXQE0`)
                 // const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=v3oh-ib_9QUwuc4GFdDzm8I21nq41fVaTyjro6eXQE0`)
-                const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=v3oh-ib_9QUwuc4GFdDzm8I21nq41fVaTyjro6eXQE0`)
+                const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + process.env.LOCATION_API)
                 // const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=v3oh-ib_9QUwuc4GFdDzm8I21nq41fVaTyjro6eXQE0`)
                 // const resMuseums = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=museums&apiKey=v3oh-ib_9QUwuc4GFdDzm8I21nq41fVaTyjro6eXQE0`)
                 // const dataHistoricalMonuments = await resHistoricalMonuments.json();
@@ -67,12 +67,12 @@ const Map = ({ coordinates, layer, mode }) => {
                 className="w-[100vw] h-[100vh]"
                 >
                 {layer === 'HERE' && mode === 'light' &&(<TileLayer
-                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/512/png8?apiKey=" + process.env.MAP_API +"&ppi=320"}
+                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/512/png8?apiKey=" + process.env.LOCATION_API +"&ppi=320"}
                     // attribution="&copy; <a>HERE Maps</a> contributors" 
                     className=" grayscale"
                     />)}
                 {layer === 'HERE' && mode === 'dark' &&(<TileLayer
-                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/reduced.night/{z}/{x}/{y}/512/png8?apiKey=" + process.env.MAP_API + "&ppi=320"}
+                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/reduced.night/{z}/{x}/{y}/512/png8?apiKey=" + process.env.LOCATION_API + "&ppi=320"}
                     // attribution="&copy; <a>HERE Maps</a> contributors" 
                     className=" grayscale contrast-200"
                     />)}

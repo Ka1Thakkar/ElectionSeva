@@ -53,6 +53,35 @@ app.post("/signup", (req, res) => {
     );
 });
 
+app.post("/add-booth", (req, res) => {
+    console.log(req.body);
+    const lat = req.body.lat;
+    const lng = req.body.lng;
+    const name = req.body.name;
+    const category = req.body.category;
+    const active = req.body.active;
+    const total = req.body.total;
+    const staff = req.body.staff;
+    const police = req.body.police;
+
+    db.query(
+        "INSERT INTO Polls(lat,lng, name, category, active, total, staff,police) VALUES (?,?,?,?,?,?,?,?)",
+        [lat, lng, name, category, active, total, staff, police],
+        (err, result) => {
+            if (err) {
+                console.log(err);
+                var msg = "Booth already registered"
+                res.send({ message: msg });
+            }
+            else {
+                console.log(result);
+                var msg = "Booth successfully registered";
+                res.send({ message: msg });
+            }
+        }
+    );
+});
+
 app.post("/login", (req, res) => {
     console.log(req.body);
     const email = req.body.email;
@@ -74,43 +103,26 @@ app.post("/login", (req, res) => {
     );
 });
 
-app.put("/update-category", (req, res) => {
+app.put("/update-booth", (req, res) => {
     console.log(req.body);
     const lat = req.body.lat;
     const lng = req.body.lng;
     const category = req.body.category;
-
-    db.query(
-        "Update Polls Set category=? where lat=? and lng=? ",
-        [category, lat, lng],
-        (err, result) => {
-            if (err) {
-                res.send({ err: err });
-            }
-            else {
-                console.log(result);
-                res.send(result);
-            }
-        }
-    )
-})
-
-app.put("/update-active", (req, res) => {
-    console.log(req.body);
-    const lat = req.body.lat;
-    const lng = req.body.lng;
     const active = req.body.active;
+    const total = req.body.total;
+    const staff = req.body.staff;
+    const police = req.body.police;
 
     db.query(
-        "Update Polls Set active=? where lat=? and lng=? ",
-        [active, lat, lng],
+        "Update Polls Set category=?, active=?, total=?, staff=?, police =? where lat=? and lng=? ",
+        [category, active, total, staff, police, lat, lng],
         (err, result) => {
             if (err) {
                 res.send({ err: err });
             }
             else {
                 console.log(result);
-                res.send(result);
+                res.send({ message: "Updated successfully" });
             }
         }
     )
@@ -126,6 +138,28 @@ app.get("/fetch-booths", (req, res) => {
             else {
                 console.log(result);
                 res.send(result);
+            }
+        }
+    )
+})
+
+app.post("/check-booth", (req, res) => {
+    const lat = req.body.lat;
+    const lng = req.body.lng;
+    db.query(
+        "Select * from Polls where lat=? AND lng=?",
+        [29.37077, 76.60297],
+        (err, result) => {
+            if (err) {
+                console.log(result);
+                res.send({ err: err });
+            }
+            if (result.length > 0) {
+                console.log(result);
+                res.send(result);
+            } else {
+                console.log(result);
+                res.send({ message: "No booth exists" });
             }
         }
     )
