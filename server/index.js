@@ -59,14 +59,13 @@ app.post("/add-booth", (req, res) => {
     const lng = req.body.lng;
     const name = req.body.name;
     const category = req.body.category;
-    const active = req.body.active;
     const total = req.body.total;
     const staff = req.body.staff;
     const police = req.body.police;
 
     db.query(
-        "INSERT INTO Polls(lat,lng, name, category, active, total, staff,police) VALUES (?,?,?,?,?,?,?,?)",
-        [lat, lng, name, category, active, total, staff, police],
+        "INSERT INTO Polls(lat,lng, name, category, total, staff,police) VALUES (?,?,?,?,?,?,?)",
+        [lat, lng, name, category, total, staff, police],
         (err, result) => {
             if (err) {
                 console.log(err);
@@ -108,14 +107,13 @@ app.put("/update-booth", (req, res) => {
     const lat = req.body.lat;
     const lng = req.body.lng;
     const category = req.body.category;
-    const active = req.body.active;
     const total = req.body.total;
     const staff = req.body.staff;
     const police = req.body.police;
 
     db.query(
-        "Update Polls Set category=?, active=?, total=?, staff=?, police =? where lat=? and lng=? ",
-        [category, active, total, staff, police, lat, lng],
+        "Update Polls Set category=?, total=?, staff=?, police =? where lat=? and lng=? ",
+        [category, total, staff, police, lat, lng],
         (err, result) => {
             if (err) {
                 res.send({ err: err });
@@ -148,7 +146,7 @@ app.post("/check-booth", (req, res) => {
     const lng = req.body.lng;
     db.query(
         "Select * from Polls where lat=? AND lng=?",
-        [29.37077, 76.60297],
+        [lat, lng],
         (err, result) => {
             if (err) {
                 console.log(result);

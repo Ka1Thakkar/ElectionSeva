@@ -8,6 +8,23 @@ import { DM_Serif_Display, DM_Sans, Roboto_Condensed, Roboto } from "next/font/g
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import Axios from 'axios';
+import { RadioGroupItem, RadioGroup } from "./ui/radio-group";
+import { Input } from "./ui/input";
+import { Button } from "@/components/ui/button"
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+} from "@/components/ui/command"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
+
 
 const headingFont = Roboto_Condensed({ subsets: ['latin'], weight: 'variable' });
 const contentFont = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] });
@@ -27,23 +44,24 @@ const Map = ({ coordinates, layer, mode }) => {
     const [modal, setModal] = useState(false)
     const [markerData, setMarkerData] = useState([])
     const [locationData, setLocationData] = useState([])
+    const [updating, setUpdating] = useState(false)
 
 
     useEffect(() => {
         const getMarkers = (async () => {
             console.log("inside getSuggestions");
-            const resHistoricalMonuments = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-            // const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=`+process.env.LOCATION_API)
-            // const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=`+process.env.LOCATION_API)
-            // const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=`+process.env.LOCATION_API)
-            // const resMuseums = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=museums&apiKey=`+process.env.LOCATION_API)
-            const dataHistoricalMonuments = await resHistoricalMonuments.json();
-            // const dataTouristAttractions = await resTouristAttractions.json();
-            // const dataLandmarkAttractions = await resLandmarkAttractions.json();
+            // const resHistoricalMonuments = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+            const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+            const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+            const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+            // const resMuseums = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=museums&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+            // const dataHistoricalMonuments = await resHistoricalMonuments.json();
+            const dataTouristAttractions = await resTouristAttractions.json();
+            const dataLandmarkAttractions = await resLandmarkAttractions.json();
             // const dataMuseums = await resMuseums.json();
-            // const dataReligiousPlaces = await resReligiousPlaces.json();
-            // const data = dataHistoricalMonuments.items.concat(dataTouristAttractions.items, dataLandmarkAttractions.items, dataMuseums.items, dataReligiousPlaces.items)
-            const data = dataHistoricalMonuments.items
+            const dataReligiousPlaces = await resReligiousPlaces.json();
+            const data = dataReligiousPlaces.items.concat(dataTouristAttractions.items, dataLandmarkAttractions.items)
+            // const data = dataHistoricalMonuments.items
             setMarkers(data)
             console.log(data)
         }
@@ -53,11 +71,25 @@ const Map = ({ coordinates, layer, mode }) => {
         }
 
     }, [coordinates])
+    function getActiveMarkers() {
+        Axios.get("http://localhost:3001/fetch-booths").then(res => {console.log(res); setMarkers(res.data);})
+    }
     return (
         <>
             <AnimatePresence>
-                {modal && (<Modal markerData={markerData} state={modal} stateFunction={setModal} mode={mode} />)}
+                {modal && !updating && (<Modal markerData={markerData} state={modal} stateFunction={setModal} mode={mode} />)}
             </AnimatePresence>
+            <AnimatePresence>
+                {modal && updating && (<UpdateModal markerData={markerData} state={modal} stateFunction={setModal} mode={mode} />)}
+            </AnimatePresence>
+            <div className="absolute z-[99999] p-5 bottom-0 left-0 flex flex-col gap-5">
+                <div role="button" className={cn("rounded-full backdrop-blur px-5 py-2 w-fit", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+                    Add New Station
+                </div>
+                <div role="button" onClick={() => {getActiveMarkers(); setUpdating(true)}} className={cn("rounded-full backdrop-blur px-5 py-2", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+                    Update Station Details
+                </div>
+            </div>
             <MapContainer
                 id="Map"
                 center={[28.679079, 77.069710]}
@@ -89,12 +121,14 @@ const Map = ({ coordinates, layer, mode }) => {
                 />)}
                 <RecenterAutomatically lat={lat} lng={lng} />
                 {markers?.map((marker, index) => {
+                    const markerLat = marker.lat || marker.position.lat
+                    const markerLng = marker.lng || marker.position.lng
                     return (
-                        <Marker icon={myIcon} key={index} position={marker !== undefined ? [marker?.position.lat, marker?.position.lng] : [lat, lng]}>
+                        <Marker icon={myIcon} key={index} position={marker !== undefined ? [markerLat, markerLng] : [lat, lng]}>
                             <Popup className="">
                                 <div className="">
                                     <h1 className={cn(headingFont.className, " text-base font-semibold")}>
-                                        {marker?.title}
+                                        {marker?.title || marker?.name}
                                     </h1>
                                     <button className={cn(contentFont.className, " text-blue-950 pt-2")} onClick={() => { setModal(true); setMarkerData(marker) }}>
                                         Read More...
@@ -125,13 +159,40 @@ const RecenterAutomatically = ({ lat, lng }) => {
 
 const Modal = ({ markerData, state, stateFunction, mode }) => {
 
-    const [name, setName] = useState("");
-    const [category, setCategory] = useState("");
-    const [active, setActive] = useState("");
-    const [total, setTotal] = useState("");
-    const [staff, setStaff] = useState("");
-    const [police, setPolice] = useState("");
+    const [name, setName] = useState(markerData.title);
+    const [category, setCategory] = useState("Normal");
+    // const [active, setActive] = useState("False");
+    const [staff, setStaff] = useState(10);
+    const [police, setPolice] = useState(10);
+    const [total, setTotal] = useState(2);
     const [exists, setExists] = useState(false);
+    const [open, setOpen] = useState(false)
+    const [score, setScore] = useState(0)
+
+    async function getScore(){
+        const lat = markerData.position.lat;
+        const lng = markerData.position.lng;
+        
+        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataHospitals = await resHospitals.json();
+        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataPoliceStations = await resPoliceStations.json();
+        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataFireStations = await resFireStations.json();
+        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataIndustrial = await resIndustrial.json();
+        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataCargo = await resCargo.json();
+
+        let hosp_len = dataHospitals.items.length;
+        let pol_len = dataPoliceStations.items.length;
+        let fire_len = dataFireStations.items.length;
+        let ind_len = dataIndustrial.items.length;
+        let carg_len = dataCargo.items.length;
+        console.log(hosp_len + pol_len + fire_len + ind_len + carg_len)
+        setScore((hosp_len*0.3 + pol_len*0.4 + fire_len*0.3 + (ind_len + carg_len) * (-0.2)))
+        
+    }
 
     useEffect(() => {
         const lat = markerData.position.lat;
@@ -145,15 +206,20 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                 setExists(false);
             }
             else {
-                setName(response.data.name);
-                setCategory(response.data.category);
-                setTotal(response.data.total);
-                setStaff(response.data.staff);
-                setPolice(response.data.police);
+                setName(response.data[0].name);
+                setCategory(response.data[0].category);
+                setTotal(response.data[0].total);
+                setStaff(response.data[0].staff);
+                setPolice(response.data[0].police);
                 setExists(true);
+                // setActive("True")
             }
         });
+
+        getScore();
+
     }, [markerData])
+
 
     function updateBooth() {
         const lat = markerData.position.lat;
@@ -162,7 +228,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
             lat: lat,
             lng: lng,
             category: category,
-            active: active,
+            // active: active,
             total: total,
             staff: staff,
             police: police,
@@ -177,14 +243,15 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
         });
     }
 
-    function addBooth(){
+    function addBooth() {
         const lat = markerData.position.lat;
         const lng = markerData.position.lng;
         Axios.post("http://localhost:3001/add-booth", {
             lat: lat,
             lng: lng,
+            name : markerData.title,
             category: category,
-            active: true,
+            // active: active,
             total: total,
             staff: staff,
             police: police,
@@ -193,7 +260,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
             if (response.data.message === "Booth successfully registered") {
                 // setExists(false);
             }
-            else if(response.data.message === "Booth already registered"){
+            else if (response.data.message === "Booth already registered") {
 
             }
         });
@@ -223,27 +290,328 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                         <p className={cn("text-5xl font-semibold", headingFont.className)}>
                             {markerData.title}
                         </p>
-                        <p className="pt-10 text-sm font-light">
-                            <span className="font-bold">Address</span> : {markerData.address.label} ({markerData.position.lat}, {markerData.position.lng})
-                        </p>
-                        <div className="text-sm flex gap-5">
-                            <p className="font-bold">Categories :</p>
-                            <ul className=" list-disc list-inside">
-                                {markerData.categories?.map((category, index) => {
-                                    return (
-                                        <li key={index} className="font-light">{category.name}</li>
-                                    )
-                                })}
-                            </ul>
+                        {/* <p className="pt-10 text-sm font-light">
+                            <span className="font-bold">Address</span>: {markerData.address.label || markerData.address}
+                        </p> */}
+                        <div className="flex gap-5 items-start pt-2">
+                            <p className="text-sm font-bold">
+                                Category:
+                            </p>
+                            <div className="text-sm">
+                                <RadioGroup defaultValue="option-one">
+                                    <div role="button" onClick={() => setCategory('Normal')} className="flex items-center space-x-2">
+                                        <RadioGroupItem value="option-one" id="option-one" onCheck={() => setCategory('Normal')} />
+                                        <p htmlFor="option-one">Normal</p>
+                                    </div>
+                                    <div role="button" onClick={() => setCategory('Disability Friendly')} className="flex items-center space-x-2">
+                                        <RadioGroupItem value="option-two" id="option-two" onCheck={() => setCategory('Disability Friendly')} />
+                                        <p htmlFor="option-two">Disability Friendly</p>
+                                    </div>
+                                    <div role="button" onClick={() => setCategory('Senior Citizen Friendly')} className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Senior Citizen Friendly" id="option-three" onCheck={() => setCategory('Senior Citizen Firendly')} />
+                                        <p htmlFor="option-two">Senior Citizen Friendly</p>
+                                    </div>
+                                </RadioGroup>
+
+                            </div>
                         </div>
-                        <p className="text-sm">
-                            <span className="font-bold">Distance</span> : {markerData.distance / 1000} km
-                        </p>
+                        {/* <div className="flex gap-5 items-start pt-2">
+                            <p className="text-sm font-bold">
+                                Active:
+                            </p>
+                            <p className="text-sm">
+                                {active}
+                            </p>
+                        </div> */}
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Staff:
+                            </p>
+                            <Input value={staff} onChange={e => { setStaff(parseInt(e.target.value, 10)); if (e.target.value === "") { setStaff(0) }; }} />
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Police:
+                            </p>
+                            <Input onChange={e => { setPolice(parseInt(e.target.value, 10)); if (e.target.value === "") { setPolice(0) }; }} value={police} />
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Total:
+                            </p>
+                            <Input onChange={e => { setTotal(parseInt(e.target.value, 10)); if (e.target.value === "") { setTotal(0) }; }} value={total} />
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Score:
+                            </p>
+                            <p className="text-sm">
+                                {score}
+                            </p>
+                        </div>
+                        <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { addBooth(); setExists(true)}}>
+                            Add Station
+                        </div>
                     </div>
                 </motion.div>
 
             </motion.div>}
-            {exists && <div>Hello</div>};
+            {exists && <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                exit={{ opacity: 0 }}
+                className={cn("absolute z-[9999] h-fit lg:h-screen lg:top-0 right-0 flex items-end lg:items-end p-5 w-[100vw] lg:w-fit", contentFont.className)}
+            >
+                <motion.div
+                    initial={{ opacity: 0, y: 500 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    exit={{ opacity: 0, y: 500 }}
+                    className={cn("lg:w-[30vw] w-full h-fit backdrop-blur-xl p-10 rounded-2xl z-[99999] relative overflow-y-auto", mode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}
+                >
+                    <div role="button" className={cn("fixed top-5 right-5", mode === 'dark' ? 'text-red-700' : 'text-red-400')} onClick={() => stateFunction(!state)}>
+                        <CircleX size={30} />
+                    </div>
+                    <div className=" flex flex-col gap-2">
+                        <p className={cn("text-5xl font-semibold", headingFont.className)}>
+                            {name}
+                        </p>
+                        {/* <p className="pt-10 text-sm font-light">
+                            <span className="font-bold">Address</span>: {markerData.address.label}
+                        </p> */}
+                        <div className="flex gap-5 items-start pt-2">
+                            <p className="text-sm font-bold">
+                                Category:
+                            </p>
+                            <div className="text-sm">
+                                {category}
+                            </div>
+                        </div>
+                        {/* <div className="flex gap-5 items-start pt-2">
+                            <p className="text-sm font-bold">
+                                Active:
+                            </p>
+                            <p className="text-sm">
+                                {active}
+                            </p>
+                        </div> */}
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Staff:
+                            </p>
+                            <p className="text-sm">
+                                {staff}
+                            </p>
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Police:
+                            </p>
+                            <p className="text-sm">
+                                {police}
+                            </p>
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Total:
+                            </p>
+                            <p className="text-sm">
+                                {total}
+                            </p>
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Score:
+                            </p>
+                            <p className="text-sm">
+                                {score}
+                            </p>
+                        </div>
+                        <div className=" text-xs w-fit rounded-xl mt-5 text-red-700">
+                            This station is already an active polling station.
+                        </div>
+                    </div>
+                </motion.div>
+
+            </motion.div>}
+        </>
+    )
+}
+
+const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
+    console.log(markerData)
+    const [name, setName] = useState(markerData.name);
+    const [category, setCategory] = useState("Normal");
+    // const [active, setActive] = useState("False");
+    const [staff, setStaff] = useState(10);
+    const [police, setPolice] = useState(10);
+    const [total, setTotal] = useState(2);
+    const [exists, setExists] = useState(false);
+    const [open, setOpen] = useState(false)
+    const [score, setScore] = useState(0)
+
+    async function getScore(){
+        const lat = markerData.lat;
+        const lng = markerData.lng;
+        
+        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataHospitals = await resHospitals.json();
+        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataPoliceStations = await resPoliceStations.json();
+        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataFireStations = await resFireStations.json();
+        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataIndustrial = await resIndustrial.json();
+        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const dataCargo = await resCargo.json();
+
+        let hosp_len = dataHospitals.items.length;
+        let pol_len = dataPoliceStations.items.length;
+        let fire_len = dataFireStations.items.length;
+        let ind_len = dataIndustrial.items.length;
+        let carg_len = dataCargo.items.length;
+        console.log(hosp_len + pol_len + fire_len + ind_len + carg_len)
+        setScore((hosp_len*0.3 + pol_len*0.4 + fire_len*0.3 + (ind_len + carg_len) * (-0.2)))
+        
+    }
+
+    useEffect(() => {
+        const lat = markerData.lat;
+        const lng = markerData.lng;
+        Axios.post("http://localhost:3001/check-booth", {
+            lat: lat,
+            lng: lng
+        }).then((response) => {
+            console.log(response);
+            if (response.data.message) {
+                setExists(false);
+            }
+            else {
+                setName(response.data[0].name);
+                setCategory(response.data[0].category);
+                setTotal(response.data[0].total);
+                setStaff(response.data[0].staff);
+                setPolice(response.data[0].police);
+                setExists(true);
+                // setActive("True")
+            }
+        });
+
+        getScore();
+
+    }, [markerData])
+
+
+    function updateBooth() {
+        const lat = markerData.lat;
+        const lng = markerData.lng;
+        Axios.put("http://localhost:3001/update-booth", {
+            lat: lat,
+            lng: lng,
+            category: category,
+            // active: active,
+            total: total,
+            staff: staff,
+            police: police,
+        }).then((response) => {
+            console.log(response);
+            if (response.data.message) {
+                // setExists(false);
+            }
+            else {
+
+            }
+        });
+    }
+    return (
+        <>
+            {exists && <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                exit={{ opacity: 0 }}
+                className={cn("absolute z-[9999] h-fit lg:h-screen lg:top-0 right-0 flex items-end lg:items-end p-5 w-[100vw] lg:w-fit", contentFont.className)}
+            >
+                <motion.div
+                    initial={{ opacity: 0, y: 500 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    exit={{ opacity: 0, y: 500 }}
+                    className={cn("lg:w-[30vw] w-full h-fit backdrop-blur-xl p-10 rounded-2xl z-[99999] relative overflow-y-auto", mode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}
+                >
+                    <div role="button" className={cn("fixed top-5 right-5", mode === 'dark' ? 'text-red-700' : 'text-red-400')} onClick={() => stateFunction(!state)}>
+                        <CircleX size={30} />
+                    </div>
+                    <div className=" flex flex-col gap-2">
+                        <p className={cn("text-5xl font-semibold", headingFont.className)}>
+                            {name}
+                        </p>
+                        {/* <p className="pt-10 text-sm font-light">
+                            <span className="font-bold">Address</span>: {markerData.address.label || markerData.address}
+                        </p> */}
+                        <div className="flex gap-5 items-start pt-2">
+                            <p className="text-sm font-bold">
+                                Category:
+                            </p>
+                            <div className="text-sm">
+                                <RadioGroup defaultValue="option-one">
+                                    <div role="button" onClick={() => setCategory('Normal')} className="flex items-center space-x-2">
+                                        <RadioGroupItem value="option-one" id="option-one" onCheck={() => setCategory('Normal')} />
+                                        <p htmlFor="option-one">Normal</p>
+                                    </div>
+                                    <div role="button" onClick={() => setCategory('Disability Friendly')} className="flex items-center space-x-2">
+                                        <RadioGroupItem value="option-two" id="option-two" onCheck={() => setCategory('Disability Friendly')} />
+                                        <p htmlFor="option-two">Disability Friendly</p>
+                                    </div>
+                                    <div role="button" onClick={() => setCategory('Senior Citizen Friendly')} className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Senior Citizen Friendly" id="option-three" onCheck={() => setCategory('Senior Citizen Firendly')} />
+                                        <p htmlFor="option-two">Senior Citizen Friendly</p>
+                                    </div>
+                                </RadioGroup>
+
+                            </div>
+                        </div>
+                        {/* <div className="flex gap-5 items-start pt-2">
+                            <p className="text-sm font-bold">
+                                Active:
+                            </p>
+                            <p className="text-sm">
+                                {active}
+                            </p>
+                        </div> */}
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Staff:
+                            </p>
+                            <Input value={staff} onChange={e => { setStaff(parseInt(e.target.value, 10)); if (e.target.value === "") { setStaff(0) }; }} />
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Police:
+                            </p>
+                            <Input onChange={e => { setPolice(parseInt(e.target.value, 10)); if (e.target.value === "") { setPolice(0) }; }} value={police} />
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Total:
+                            </p>
+                            <Input onChange={e => { setTotal(parseInt(e.target.value, 10)); if (e.target.value === "") { setTotal(0) }; }} value={total} />
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
+                                Score:
+                            </p>
+                            <p className="text-sm">
+                                {score}
+                            </p>
+                        </div>
+                        <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { updateBooth(); setExists(true)}}>
+                            Update Station Details
+                        </div>
+                    </div>
+                </motion.div>
+            </motion.div>}
         </>
     )
 }
