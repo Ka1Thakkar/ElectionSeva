@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 // import MapComponent from "@/components/new_map";
 // import Map from "@/components/map";
 
-const Map = dynamic(() => import('@/components/map'), { ssr: false });
+const Map = dynamic(() => import('@/components/user-map'), { ssr: false });
 
 const headingFont = Roboto_Condensed({ subsets: ['latin'], weight: 'variable' });
 const contentFont = Roboto({ subsets: ['latin'], weight: ['400','500','700'] });
