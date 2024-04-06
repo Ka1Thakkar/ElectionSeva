@@ -162,4 +162,110 @@ app.post("/check-booth", (req, res) => {
         }
     )
 })
+app.post("/get-booth-details", (req, res) => {
+    const boothId=req.body.boothId;
+    db.query(
+        "Select * from Polls where boothId=?",
+        [boothId],
+        (err, result) => {
+            if (err) {
+                console.log(result);
+                res.send({ err: err });
+            }
+            if (result.length > 0) {
+                console.log(result);
+                res.send(result);
+            } else {
+                console.log(result);
+                res.send({ message: "No booth exists" });
+            }
+        }
+    )
+})
+
+app.post("/check-user", (req, res) => {
+    console.log(req.body);
+    const email = req.body.email;
+    db.query(
+        "Select * from Users where email=?",
+        [email],
+        (err, result) => {
+            if (err) {
+                console.log(result);
+                res.send({ err: err });
+            }
+            if (result.length > 0) {
+                console.log(result);
+                res.send(result);
+            } else {
+                console.log(result);
+                res.send({ message: "No Users exists" });
+            }
+        }
+    )
+})
+
+
+
+app.get("/booth-user-details", (req, res) => {
+    const boothId = req.body.id;
+    db.query(
+        "Select * from Users where boothId=?",
+        [boothId],
+        (err, result) => {
+            if (err) {
+                console.log(result);
+                res.send({ err: err });
+            }
+            if (result.length > 0) {
+                console.log(result);
+                res.send(result);
+            } else {
+                console.log(result);
+                res.send({ message: "No booth exists" });
+            }
+        }
+    )
+})
+
+app.put("/update-booth-user-details", (req, res) => {
+    const boothId = req.body.id;
+    const email = req.body.email;
+    const voterId = req.body.voterId;
+    db.query(
+        "UPDATE Users SET boothId where email=? AND voterId=?",
+        [boothId,email, voterId],
+        (err, result) => {
+            if (err) {
+                res.send({ err: err });
+            }
+            else {
+                console.log(result);
+                res.send({ message: "Updated successfully" });
+            }
+        }
+    )
+});
+
+app.post("/delete-booth", (req, res) => {
+    const lat = req.body.lat;
+    const lng = req.body.lng;
+    db.query(
+        "DELETE from Polls where lat=? AND lng=?",
+        [lat, lng],
+        (err, result) => {
+            if (err) {
+                console.log(result);
+                res.send({ err: err });
+            }
+            else if (result) {
+                console.log(result);
+                res.send({ message: "Booth removed successfully" });
+                res.send(result);
+            }
+        }
+    )
+})
+
+
 

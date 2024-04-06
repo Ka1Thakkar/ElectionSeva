@@ -47,30 +47,31 @@ const Map = ({ coordinates, layer, mode }) => {
     const [updating, setUpdating] = useState(false)
 
 
+    const getMarkers = (async () => {
+        console.log("inside getSuggestions");
+        // const resHistoricalMonuments = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc`)
+        const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc`)
+        const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc`)
+        // const resMuseums = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=museums&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        // const dataHistoricalMonuments = await resHistoricalMonuments.json();
+        const dataTouristAttractions = await resTouristAttractions.json();
+        const dataLandmarkAttractions = await resLandmarkAttractions.json();
+        // const dataMuseums = await resMuseums.json();
+        const dataReligiousPlaces = await resReligiousPlaces.json();
+        const data = dataReligiousPlaces.items.concat(dataTouristAttractions.items, dataLandmarkAttractions.items)
+        // const data = dataHistoricalMonuments.items
+        setMarkers(data)
+        console.log(data)
+    }
+    );
     useEffect(() => {
-        const getMarkers = (async () => {
-            console.log("inside getSuggestions");
-            // const resHistoricalMonuments = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-            const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-            const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-            const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-            // const resMuseums = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=museums&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-            // const dataHistoricalMonuments = await resHistoricalMonuments.json();
-            const dataTouristAttractions = await resTouristAttractions.json();
-            const dataLandmarkAttractions = await resLandmarkAttractions.json();
-            // const dataMuseums = await resMuseums.json();
-            const dataReligiousPlaces = await resReligiousPlaces.json();
-            const data = dataReligiousPlaces.items.concat(dataTouristAttractions.items, dataLandmarkAttractions.items)
-            // const data = dataHistoricalMonuments.items
-            setMarkers(data)
-            console.log(data)
-        }
-        );
-        if (coordinates[0] !== undefined && coordinates[1] !== undefined) {
+        if (coordinates[0] !== undefined && coordinates[1] !== undefined && !updating) {
             getMarkers();
         }
 
     }, [coordinates])
+
     function getActiveMarkers() {
         Axios.get("http://localhost:3001/fetch-booths").then(res => {console.log(res); setMarkers(res.data);})
     }
@@ -83,11 +84,11 @@ const Map = ({ coordinates, layer, mode }) => {
                 {modal && updating && (<UpdateModal markerData={markerData} state={modal} stateFunction={setModal} mode={mode} />)}
             </AnimatePresence>
             <div className="absolute z-[99999] p-5 bottom-0 left-0 flex flex-col gap-5">
-                <div role="button" className={cn("rounded-full backdrop-blur px-5 py-2 w-fit", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
-                    Add New Station
+                <div role="button" onClick={() => {setModal(false); getMarkers(); setUpdating(false)}} className={cn("rounded-full backdrop-blur px-5 py-2 w-fit", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+                    Add new active station
                 </div>
-                <div role="button" onClick={() => {getActiveMarkers(); setUpdating(true)}} className={cn("rounded-full backdrop-blur px-5 py-2", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
-                    Update Station Details
+                <div role="button" onClick={() => {setModal(false);getActiveMarkers(); setUpdating(true)}} className={cn("rounded-full backdrop-blur px-5 py-2", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+                    Show Active Stations
                 </div>
             </div>
             <MapContainer
@@ -100,12 +101,12 @@ const Map = ({ coordinates, layer, mode }) => {
                 className="w-[100vw] h-[100vh]"
             >
                 {layer === 'HERE' && mode === 'light' && (<TileLayer
-                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/512/png8?apiKey=" + process.env.LOCATION_API_API + "&ppi=320"}
+                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/512/png8?apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc&ppi=320"}
                     // attribution="&copy; <a>HERE Maps</a> contributors" 
                     className=" grayscale"
                 />)}
                 {layer === 'HERE' && mode === 'dark' && (<TileLayer
-                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/reduced.night/{z}/{x}/{y}/512/png8?apiKey=" + process.env.LOCATION_API + "&ppi=320"}
+                    url={"https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/reduced.night/{z}/{x}/{y}/512/png8?apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc&ppi=320"}
                     // attribution="&copy; <a>HERE Maps</a> contributors" 
                     className=" grayscale contrast-200"
                 />)}
@@ -168,6 +169,27 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
     const [exists, setExists] = useState(false);
     const [open, setOpen] = useState(false)
     const [score, setScore] = useState(0)
+    const [populationDensity, setPopulationDensity] = useState(Math.floor((Math.random() * 100) + 1))
+
+    useEffect(() => {
+        if (populationDensity > 90 && populationDensity<=100) {
+            setPolice(20)
+            setStaff(10)
+            setTotal(4)
+        } else if (populationDensity > 75 && populationDensity <= 90) {
+            setPolice(15)
+            setStaff(7)
+            setTotal(3)
+        } else if (populationDensity > 25 && populationDensity <= 75) {
+            setPolice(10)
+            setStaff(5)
+            setTotal(1)
+        } else {
+            setPolice(7)
+            setStaff(4)
+            setTotal(1)
+        }
+    }, [markerData])
 
     async function getScore(){
         const lat = markerData.position.lat;
@@ -211,7 +233,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                 setTotal(response.data[0].total);
                 setStaff(response.data[0].staff);
                 setPolice(response.data[0].police);
-                setExists(true);
+                setExists(true);    
                 // setActive("True")
             }
         });
@@ -281,13 +303,13 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                     exit={{ opacity: 0, y: 500 }}
-                    className={cn("lg:w-[30vw] w-full h-fit backdrop-blur-xl p-10 rounded-2xl z-[99999] relative overflow-y-auto", mode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}
+                    className={cn("lg:w-[30vw] w-full h-fit backdrop-blur-xl p-5 rounded-2xl z-[99999] relative overflow-y-auto", mode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}
                 >
                     <div role="button" className={cn("fixed top-5 right-5", mode === 'dark' ? 'text-red-700' : 'text-red-400')} onClick={() => stateFunction(!state)}>
                         <CircleX size={30} />
                     </div>
                     <div className=" flex flex-col gap-2">
-                        <p className={cn("text-5xl font-semibold", headingFont.className)}>
+                        <p className={cn("text-4xl font-semibold", headingFont.className)}>
                             {markerData.title}
                         </p>
                         {/* <p className="pt-10 text-sm font-light">
@@ -325,6 +347,11 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                         </div> */}
                         <div className="flex gap-5 items-center pt-2">
                             <p className="text-sm font-bold">
+                                These are the recommended number of Police, Emergency Staff and Number of booths for the elections. (According to the population density)
+                            </p>
+                        </div>
+                        <div className="flex gap-5 items-center pt-2">
+                            <p className="text-sm font-bold">
                                 Staff:
                             </p>
                             <Input value={staff} onChange={e => { setStaff(parseInt(e.target.value, 10)); if (e.target.value === "") { setStaff(0) }; }} />
@@ -337,7 +364,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                         </div>
                         <div className="flex gap-5 items-center pt-2">
                             <p className="text-sm font-bold">
-                                Total:
+                                Total Number of Booths:
                             </p>
                             <Input onChange={e => { setTotal(parseInt(e.target.value, 10)); if (e.target.value === "") { setTotal(0) }; }} value={total} />
                         </div>
@@ -368,13 +395,13 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                     exit={{ opacity: 0, y: 500 }}
-                    className={cn("lg:w-[30vw] w-full h-fit backdrop-blur-xl p-10 rounded-2xl z-[99999] relative overflow-y-auto", mode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}
+                    className={cn("lg:w-[30vw] w-full h-fit backdrop-blur-xl p-5 rounded-2xl z-[99999] relative overflow-y-auto", mode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}
                 >
                     <div role="button" className={cn("fixed top-5 right-5", mode === 'dark' ? 'text-red-700' : 'text-red-400')} onClick={() => stateFunction(!state)}>
                         <CircleX size={30} />
                     </div>
                     <div className=" flex flex-col gap-2">
-                        <p className={cn("text-5xl font-semibold", headingFont.className)}>
+                        <p className={cn("text-4xl font-semibold", headingFont.className)}>
                             {name}
                         </p>
                         {/* <p className="pt-10 text-sm font-light">
@@ -414,7 +441,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                         </div>
                         <div className="flex gap-5 items-center pt-2">
                             <p className="text-sm font-bold">
-                                Total:
+                                Total Number of Booths:
                             </p>
                             <p className="text-sm">
                                 {total}
@@ -498,9 +525,8 @@ const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
             }
         });
 
-        getScore();
 
-    }, [markerData])
+    }, [markerData,])
 
 
     function updateBooth() {
@@ -517,13 +543,29 @@ const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
         }).then((response) => {
             console.log(response);
             if (response.data.message) {
-                // setExists(false);
+                stateFunction(false)
             }
             else {
 
             }
         });
     }
+
+    // function deleteBooth() {
+    //     const lat = markerData.lat;
+    //     const lng = markerData.lng;
+    //     Axios.post("http://localhost:3001/delete-booth", {
+    //         lat: lat,
+    //         lng: lng,
+    //     }).then((response) => {
+    //         console.log(response);
+    //         if (response.data.message==="Booth removed successfully") {
+    //             console.log("lmaoo");
+    //             setExists(false);
+    //             stateFunction(false)
+    //         }
+    //     });
+    // }
     return (
         <>
             {exists && <motion.div
@@ -594,20 +636,17 @@ const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
                         </div>
                         <div className="flex gap-5 items-center pt-2">
                             <p className="text-sm font-bold">
-                                Total:
+                                Total Number of Booths:
                             </p>
                             <Input onChange={e => { setTotal(parseInt(e.target.value, 10)); if (e.target.value === "") { setTotal(0) }; }} value={total} />
                         </div>
-                        <div className="flex gap-5 items-center pt-2">
-                            <p className="text-sm font-bold">
-                                Score:
-                            </p>
-                            <p className="text-sm">
-                                {score}
-                            </p>
-                        </div>
-                        <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { updateBooth(); setExists(true)}}>
-                            Update Station Details
+                        <div className="flex gap-5">
+                            <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { updateBooth(); setExists(true)}}>
+                                Update Station Details
+                            </div>
+                            {/* <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { deleteBooth();}}>
+                                Set as inactive station
+                            </div> */}
                         </div>
                     </div>
                 </motion.div>

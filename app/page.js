@@ -30,8 +30,8 @@ const Login = () => {
       password: pass,
     }).then((response) => {
       console.log(response);
-      if (response.data[0].email) {
-        router.push('/user');
+      if (response.data[0].email && response.data[0].boothId) {
+        router.push(`/user?email=`+response.data[0].email);
       }
     });
   }

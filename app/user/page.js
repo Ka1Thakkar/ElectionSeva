@@ -1,18 +1,22 @@
 'use client'
 import { Input } from "@/components/ui/input";
-import { Layers, Search } from "lucide-react";
-import { useEffect, useLayoutEffect, useState, } from "react";
+import { Layers, Search, Menu, QrCode } from "lucide-react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { DM_Sans, Roboto, Roboto_Condensed } from "next/font/google";
 import dynamic from "next/dynamic";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import QRCode from "react-qr-code";
+import { useParams } from "next/navigation";
+import  Axios  from "axios";
+import { useSearchParams } from "next/navigation";
 // import MapComponent from "@/components/new_map";
 // import Map from "@/components/map";
 
 const Map = dynamic(() => import('@/components/user-map'), { ssr: false });
 
 const headingFont = Roboto_Condensed({ subsets: ['latin'], weight: 'variable' });
-const contentFont = Roboto({ subsets: ['latin'], weight: ['400','500','700'] });
+const contentFont = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] });
 
 export default function Home() {
   const [coordinates, setCoordinates] = useState([])
@@ -22,7 +26,11 @@ export default function Home() {
   const [suggestData, setSuggestData] = useState([]);
   const [layerType, setLayerType] = useState('OpenStreetMap')
   const [layerMode, setLayerMode] = useState('dark')
-
+  const [QROpen, setQROpen] = useState(false)
+  const [boothId, setboothId] = useState(1);
+  const [userEmail, setUserEmail] = useState("")
+  const [boothDetail, setboothDetail] = useState({})
+  const email = useSearchParams().get('email')
   useLayoutEffect(() => {
     const options = {
       enableHighAccuracy: true,
@@ -42,6 +50,36 @@ export default function Home() {
     navigator.geolocation.getCurrentPosition(success, error, options);
 
   }, [setCoordinates])
+
+  useEffect(() => {
+    console.log(email);
+    setUserEmail(email)
+    if (userEmail !== "") {
+      Axios.post("http://localhost:3001/check-user", {
+      email: userEmail,
+    }).then((response) => {
+      console.log(response);
+      if (response.data[0].email && response.data[0].boothId) {
+        setboothId(response.data[0].boothId);
+      }
+    });
+  }
+  }, [userEmail])
+
+  useEffect(() => {
+    console.log(boothId);
+    if (boothId) {
+      Axios.post("http://localhost:3001/get-booth-details", {
+      boothId: boothId,
+    }).then((response) => {
+      console.log(response);
+      if (response.data[0].lat && response.data[0].lng) {
+        setboothDetail(response.data[0])
+        // console.log(boothCoords);
+      }
+    });
+  }
+  }, [boothId])
 
   useEffect(() => {
     document.getElementById('input')?.addEventListener('keydown', async (e) => {
@@ -83,7 +121,7 @@ export default function Home() {
   function changeTheMap(data) {
     setSuggestData([]);
     setValue([])
-    setCoordinates([data.position.lat,data.position.lng]);
+    setCoordinates([data.position.lat, data.position.lng]);
   }
 
   const onLayerClick = (layer, mode) => {
@@ -130,12 +168,17 @@ export default function Home() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          <div className={cn("rounded-full text-xl font-medium backdrop-blur p-2", layerMode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+            <div role="button" className={cn("z-[99999] border-none outline-none flex items-center", layerMode === 'dark' ? 'text-neutral-900' : 'text-neutral-100')} onClick={() => { setQROpen(!QROpen) }}>
+              <QrCode />
+            </div>
+          </div>
         </div>
-        <div className={cn(suggestData.length !== 0  ? "z-[99999] flex flex-col gap-2 backdrop-blur w-full lg:w-[30vw] rounded-xl p-5" : 'hidden', layerMode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}>
+        <div className={cn(suggestData.length !== 0 ? "z-[99999] flex flex-col gap-2 backdrop-blur w-full lg:w-[30vw] rounded-xl p-5" : 'hidden', layerMode === 'dark' ? 'bg-neutral-300/80 text-neutral-900' : 'bg-neutral-700/80 text-neutral-100')}>
           {suggestData.map((data, id) => {
             return (
               <div key={id} role="button" onClick={e => changeTheMap(data)}>
-                <h1 className={cn(headingFont.className,"text-xl font-medium")}>
+                <h1 className={cn(headingFont.className, "text-xl font-medium")}>
                   {data.title}
                 </h1>
                 <p className={cn(contentFont.className, "flex gap-2")}>
@@ -152,7 +195,25 @@ export default function Home() {
           })}
         </div>
       </div>
-      <Map coordinates={coordinates} layer={layerType} mode={layerMode}/>
+      {QROpen && (<div className="absolute z-[99999] p-5 lg:w-fit top-0 right-0 w-[20vw]">
+        <div className={cn("rounded-xl text-xl font-medium backdrop-blur p-5 w-[20vw]", layerMode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+          <div className="overflow-hidden rounded-lg">
+            <QRCode
+              size={256}
+              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+              value={"fnadsjfnadkfnads"}
+              viewBox={`0 0 256 256`}
+              bgColor={layerMode === 'dark' ? "#CCd4d4d4" : '#CC404040'}
+              fgColor={layerMode !== 'dark' ? "#d4d4d4" : '#404040'}
+              level="Q"
+            />
+          </div>
+          <h1 className={cn(headingFont.className, layerMode === 'dark' ? 'text-neutral-900' : 'text-neutral-100', "text-xl mt-5 font-semibold text-center")}>
+            Scan this QR Code at the station
+          </h1>
+        </div>
+      </div>)}
+      <Map coordinates={coordinates} layer={layerType} mode={layerMode} boothDetail={boothDetail} />
     </main>
   );
 }
