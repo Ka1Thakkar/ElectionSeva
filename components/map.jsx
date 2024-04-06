@@ -24,7 +24,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
-
+import toast, { Toaster } from 'react-hot-toast';
 
 const headingFont = Roboto_Condensed({ subsets: ['latin'], weight: 'variable' });
 const contentFont = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] });
@@ -50,19 +50,20 @@ const Map = ({ coordinates, layer, mode }) => {
     const getMarkers = (async () => {
         console.log("inside getSuggestions");
         // const resHistoricalMonuments = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-        const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=dSSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
-        const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
-        const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
+        const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
+        const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         // const resMuseums = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=museums&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
         // const dataHistoricalMonuments = await resHistoricalMonuments.json();
         const dataTouristAttractions = await resTouristAttractions.json();
         const dataLandmarkAttractions = await resLandmarkAttractions.json();
         // const dataMuseums = await resMuseums.json();
         const dataReligiousPlaces = await resReligiousPlaces.json();
-        const data = dataReligiousPlaces.items.concat(dataTouristAttractions.items, dataLandmarkAttractions.items)
+        const data = dataReligiousPlaces?.items.concat(dataTouristAttractions?.items, dataLandmarkAttractions?.items)
         // const data = dataHistoricalMonuments.items
         setMarkers(data)
         console.log(data)
+        setUpdating(false)
     }
     );
     useEffect(() => {
@@ -73,8 +74,9 @@ const Map = ({ coordinates, layer, mode }) => {
     }, [coordinates])
 
     function getActiveMarkers() {
-        Axios.get("http://localhost:3001/fetch-booths").then(res => {console.log(res); setMarkers(res.data);})
+        Axios.get("http://localhost:3001/fetch-booths").then(res => { console.log(res); setMarkers(res.data); setUpdating(true);})
     }
+
     return (
         <>
             <AnimatePresence>
@@ -84,10 +86,10 @@ const Map = ({ coordinates, layer, mode }) => {
                 {modal && updating && (<UpdateModal markerData={markerData} state={modal} stateFunction={setModal} mode={mode} />)}
             </AnimatePresence>
             <div className="absolute z-[99999] p-5 bottom-0 left-0 flex flex-col gap-5">
-                <div role="button" onClick={() => {setModal(false); getMarkers(); setUpdating(false)}} className={cn("rounded-full backdrop-blur px-5 py-2 w-fit", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+                <div role="button" onClick={() => { setModal(false); getMarkers();  }} className={cn("rounded-full backdrop-blur px-5 py-2 w-fit", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
                     Add new active station
                 </div>
-                <div role="button" onClick={() => {setModal(false);getActiveMarkers(); setUpdating(true)}} className={cn("rounded-full backdrop-blur px-5 py-2", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
+                <div role="button" onClick={() => { setModal(false); getActiveMarkers(); }} className={cn("rounded-full backdrop-blur px-5 py-2", mode === 'dark' ? 'bg-neutral-300/80' : 'bg-neutral-700/80')}>
                     Show Active Stations
                 </div>
             </div>
@@ -121,9 +123,10 @@ const Map = ({ coordinates, layer, mode }) => {
                     className=" grayscale invert"
                 />)}
                 <RecenterAutomatically lat={lat} lng={lng} />
-                {markers?.map((marker, index) => {
-                    const markerLat = marker.lat || marker.position.lat
-                    const markerLng = marker.lng || marker.position.lng
+                {markers && markers?.map((marker, index) => {
+                    console.log(marker);
+                    const markerLat = updating ? marker.lat : marker.position.lat
+                    const markerLng = updating ? marker.lng : marker.position.lng
                     return (
                         <Marker icon={myIcon} key={index} position={marker !== undefined ? [markerLat, markerLng] : [lat, lng]}>
                             <Popup className="">
@@ -172,7 +175,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
     const [populationDensity, setPopulationDensity] = useState(Math.floor((Math.random() * 100) + 1))
 
     useEffect(() => {
-        if (populationDensity > 90 && populationDensity<=100) {
+        if (populationDensity > 90 && populationDensity <= 100) {
             setPolice(20)
             setStaff(10)
             setTotal(4)
@@ -191,19 +194,19 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
         }
     }, [markerData])
 
-    async function getScore(){
+    async function getScore() {
         const lat = markerData.position.lat;
         const lng = markerData.position.lng;
-        
-        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+
+        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataHospitals = await resHospitals.json();
-        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataPoliceStations = await resPoliceStations.json();
-        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataFireStations = await resFireStations.json();
-        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataIndustrial = await resIndustrial.json();
-        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataCargo = await resCargo.json();
 
         let hosp_len = dataHospitals.items.length;
@@ -212,8 +215,8 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
         let ind_len = dataIndustrial.items.length;
         let carg_len = dataCargo.items.length;
         console.log(hosp_len + pol_len + fire_len + ind_len + carg_len)
-        setScore((hosp_len*0.3 + pol_len*0.4 + fire_len*0.3 + (ind_len + carg_len) * (-0.2)))
-        
+        setScore((hosp_len * 0.3 + pol_len * 0.4 + fire_len * 0.3 + (ind_len + carg_len) * (-0.2)))
+
     }
 
     useEffect(() => {
@@ -233,7 +236,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                 setTotal(response.data[0].total);
                 setStaff(response.data[0].staff);
                 setPolice(response.data[0].police);
-                setExists(true);    
+                setExists(true);
                 // setActive("True")
             }
         });
@@ -242,36 +245,13 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
 
     }, [markerData])
 
-
-    function updateBooth() {
-        const lat = markerData.position.lat;
-        const lng = markerData.position.lng;
-        Axios.post("http://localhost:3001/update-booth", {
-            lat: lat,
-            lng: lng,
-            category: category,
-            // active: active,
-            total: total,
-            staff: staff,
-            police: police,
-        }).then((response) => {
-            console.log(response);
-            if (response.data.message) {
-                // setExists(false);
-            }
-            else {
-
-            }
-        });
-    }
-
     function addBooth() {
         const lat = markerData.position.lat;
         const lng = markerData.position.lng;
         Axios.post("http://localhost:3001/add-booth", {
             lat: lat,
             lng: lng,
-            name : markerData.title,
+            name: markerData.title,
             category: category,
             // active: active,
             total: total,
@@ -281,6 +261,8 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
             console.log(response);
             if (response.data.message === "Booth successfully registered") {
                 // setExists(false);
+                console.log(response.data.message);
+                toast('Successfully added');
             }
             else if (response.data.message === "Booth already registered") {
 
@@ -291,6 +273,9 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
 
     return (
         <>
+        <div>
+            <Toaster/>
+        </div>
             {!exists && <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -376,7 +361,7 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                                 {score}
                             </p>
                         </div>
-                        <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { addBooth(); setExists(true)}}>
+                        <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick={() => { addBooth(); setExists(true) }}>
                             Add Station
                         </div>
                     </div>
@@ -455,9 +440,9 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
                                 {score}
                             </p>
                         </div>
-                        <div className=" text-xs w-fit rounded-xl mt-5 text-red-700">
+                        {/* <div className=" text-xs w-fit rounded-xl mt-5 text-red-700">
                             This station is already an active polling station.
-                        </div>
+                        </div> */}
                     </div>
                 </motion.div>
 
@@ -478,19 +463,19 @@ const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
     const [open, setOpen] = useState(false)
     const [score, setScore] = useState(0)
 
-    async function getScore(){
+    async function getScore() {
         const lat = markerData.lat;
         const lng = markerData.lng;
-        
-        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+
+        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataHospitals = await resHospitals.json();
-        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataPoliceStations = await resPoliceStations.json();
-        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataFireStations = await resFireStations.json();
-        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataIndustrial = await resIndustrial.json();
-        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=kGazDsQs8YlydHOPeHk7RSPIWhIQ1CIyscHpeqU8LQ4`)
         const dataCargo = await resCargo.json();
 
         let hosp_len = dataHospitals.items.length;
@@ -499,8 +484,8 @@ const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
         let ind_len = dataIndustrial.items.length;
         let carg_len = dataCargo.items.length;
         console.log(hosp_len + pol_len + fire_len + ind_len + carg_len)
-        setScore((hosp_len*0.3 + pol_len*0.4 + fire_len*0.3 + (ind_len + carg_len) * (-0.2)))
-        
+        setScore((hosp_len * 0.3 + pol_len * 0.4 + fire_len * 0.3 + (ind_len + carg_len) * (-0.2)))
+
     }
 
     useEffect(() => {
@@ -641,7 +626,7 @@ const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
                             <Input onChange={e => { setTotal(parseInt(e.target.value, 10)); if (e.target.value === "") { setTotal(0) }; }} value={total} />
                         </div>
                         <div className="flex gap-5">
-                            <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { updateBooth(); setExists(true)}}>
+                            <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick={() => { updateBooth(); setExists(true) }}>
                                 Update Station Details
                             </div>
                             {/* <div role="button" className="text-sm py-2 px-5 bg-neutral-500/40 w-fit rounded-xl mt-5" onClick ={() => { deleteBooth();}}>

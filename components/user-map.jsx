@@ -140,7 +140,7 @@ const Map = ({ coordinates, boothDetail, layer, mode }) => {
     useEffect(() => {
         function getPolyline() 
         {
-            Axios.get(`https://router.hereapi.com/v8/routes?transportMode=car&origin=${coordinates[0]},${coordinates[1]}&destination=${boothDetail.lat},${boothDetail.lng}&return=polyline&apikey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+            Axios.get(`https://router.hereapi.com/v8/routes?transportMode=car&origin=${coordinates[0]},${coordinates[1]}&destination=${boothDetail.lat},${boothDetail.lng}&return=polyline&apikey=SOV8D2I84TlonDGDDlSlKHuGbWNTRyrvXAwmUZDkXMc`)
                 .then(response => {setRouteData((response.data)); setPolyExists(true)})
                 .catch(error => console.log(error));
         }
@@ -274,7 +274,7 @@ const RecenterAutomatically = ({ lat, lng }) => {
 
 const Modal = ({ boothDetail, state, stateFunction, mode }) => {
     const [queue, setQueue] = useState(Math.floor((Math.random() * 200) + 20))
-    const [avgTime, setAvgTime] = useState(queue * 2)
+    const [avgTime, setAvgTime] = useState(queue * 2/boothDetail.total)
     const [avgTimeString, setAvgTimeString] = useState("")
     function timeConvert(n) {
         // Store the input number of minutes in a variable num
@@ -344,6 +344,9 @@ const Modal = ({ boothDetail, state, stateFunction, mode }) => {
                     </p>
                     <p className="text-sm font-light">
                         <span className="font-bold">Queue</span> : {queue}
+                    </p>
+                    <p className="text-sm font-light">
+                        <span className="font-bold">Queue Per Booth</span> : {Math.floor(queue/boothDetail.total)}
                     </p>
                     <p className="text-sm font-light">
                         <span className="font-bold">Average Time</span> : {avgTimeString}

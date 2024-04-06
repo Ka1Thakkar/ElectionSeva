@@ -6,6 +6,9 @@ import Modal from "@/components/Modal";
 import { CircleX } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import Axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
+import 'react-toastify/dist/ReactToastify.css';
+
 const Login = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [email, setEmail] = useState("");
@@ -30,8 +33,11 @@ const Login = () => {
       password: pass,
     }).then((response) => {
       console.log(response);
-      if (response.data[0].email && response.data[0].boothId) {
-        router.push(`/user?email=`+response.data[0].email);
+      if (response.data[0]?.email && response.data[0]?.boothId) {
+        router.push(`/user?email=` + response.data[0].email);
+      }
+      else{
+        toast('Invalid email/password combination');
       }
     });
   }
@@ -47,25 +53,31 @@ const Login = () => {
       voterId: voterId
     }).then((response) => {
       console.log(response);
-      if (response.data.message==="You are successfully registered") {
+      if (response.data.message === "You are successfully registered") {
         setEmail("");
         setPass("");
         setUser("");
         setVoterId("");
         setAddress("");
+        setIsOpen(false);
+        toast('Successfully registered');
         window.location.reload();
       }
-      if(response.data.message==="Email already registered"){
-
+      if (response.data.message === "Email already registered") {
+        console.log(response.data.message);
+        toast("Email already registered");
       }
     });
   }
 
   return (
     <>
+      <div className="z-[99999]">
+        <Toaster />
+      </div>
       <AnimatePresence>
         {isOpen && (<Modal>
-          <div className="bg-neutral-800 p-10 mt-20 rounded-3xl min-w-[30vw] flex flex-col items-center justify-center gap-5 text-white">
+          <div className="bg-neutral-800 p-10 mt-20 rounded-3xl min-w-[70vw] flex flex-col items-center justify-center gap-5 text-white">
             <div role="button" onClick={() => setIsOpen(false)} className="w-full text-red-400">
               <CircleX size={30} />
             </div>
@@ -73,31 +85,31 @@ const Login = () => {
               <p className="text-2xl pb-2" >
                 Username
               </p>
-              <Input onChange={e => setUser(e.target.value)} value={user}/>
+              <Input onChange={e => setUser(e.target.value)} value={user} />
             </div>
             <div className="w-full">
               <p className="text-2xl pb-2" >
                 Email Id
               </p>
-              <Input onChange={e => setEmail(e.target.value)} value={email}/>
+              <Input onChange={e => setEmail(e.target.value)} value={email} />
             </div>
             <div className="w-full">
               <p className="text-2xl pb-2" >
                 Password
               </p>
-              <Input onChange={e => setPass(e.target.value)} value={pass}/>
+              <Input onChange={e => setPass(e.target.value)} value={pass} type="password"/>
             </div>
             <div className="w-full">
               <p className="text-2xl pb-2" >
                 Address
               </p>
-              <Input onChange={e => setAddress(e.target.value)} value={address}/>
+              <Input onChange={e => setAddress(e.target.value)} value={address} />
             </div>
             <div className="w-full">
               <p className="text-2xl pb-2" >
                 VoterId
               </p>
-              <Input onChange={e => setVoterId(e.target.value)} value={voterId}/>
+              <Input onChange={e => setVoterId(e.target.value)} value={voterId} />
             </div>
             <div className="w-full flex gap-5 items-center">
               <div role="button" className="px-5 py-2 rounded-xl bg-black w-fit" onClick={signInHandler}>
@@ -125,7 +137,7 @@ const Login = () => {
             <p className="text-2xl pb-2">
               Password
             </p>
-            <Input onChange={e => setPass(e.target.value)} value={pass} />
+            <Input onChange={e => setPass(e.target.value)} value={pass} type="password"/>
           </div>
           <div className="w-full flex gap-5 items-center">
             <div role="button" id="loginButton" className="px-5 py-2 rounded-xl bg-black w-fit" onClick={loginHandler}>

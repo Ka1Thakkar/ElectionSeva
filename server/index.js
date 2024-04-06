@@ -36,8 +36,8 @@ app.post("/signup", (req, res) => {
     const address = req.body.address;
 
     db.query(
-        "INSERT INTO Users(email, username, password, voterId, address, boothlat, boothlng) VALUES (?,?,?,?,?,?,?)",
-        [email, username, password, voterId, address, 0, 0],
+        "INSERT INTO Users(email, username, password, voterId, address) VALUES (?,?,?,?,?)",
+        [email, username, password, voterId, address],
         (err, result) => {
             if (err) {
                 console.log(err);
