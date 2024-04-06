@@ -140,7 +140,7 @@ const Map = ({ coordinates, boothDetail, layer, mode }) => {
     useEffect(() => {
         function getPolyline() 
         {
-            Axios.get(`https://router.hereapi.com/v8/routes?transportMode=car&origin=${coordinates[0]},${coordinates[1]}&destination=${boothDetail.lat},${boothDetail.lng}&return=polyline&apikey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+            Axios.get(`https://router.hereapi.com/v8/routes?transportMode=car&origin=${coordinates[0]},${coordinates[1]}&destination=${boothDetail.lat},${boothDetail.lng}&return=polyline&apikey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
                 .then(response => {setRouteData((response.data)); setPolyExists(true)})
                 .catch(error => console.log(error));
         }

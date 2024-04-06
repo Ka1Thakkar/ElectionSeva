@@ -50,9 +50,9 @@ const Map = ({ coordinates, layer, mode }) => {
     const getMarkers = (async () => {
         console.log("inside getSuggestions");
         // const resHistoricalMonuments = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
-        const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc`)
-        const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc`)
-        const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=dA79pI6GZbkml0izXgw5wOwGCVcMn_FK0cC50LGG4sc`)
+        const resTouristAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=200000&q=city+hall&apiKey=dSSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resLandmarkAttractions = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=civic-community+center&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
+        const resReligiousPlaces = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=school&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         // const resMuseums = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:`+ coordinates[0] + `,` + coordinates[1] + `;r=2000000&q=museums&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
         // const dataHistoricalMonuments = await resHistoricalMonuments.json();
         const dataTouristAttractions = await resTouristAttractions.json();
@@ -195,15 +195,15 @@ const Modal = ({ markerData, state, stateFunction, mode }) => {
         const lat = markerData.position.lat;
         const lng = markerData.position.lng;
         
-        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataHospitals = await resHospitals.json();
-        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataPoliceStations = await resPoliceStations.json();
-        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataFireStations = await resFireStations.json();
-        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataIndustrial = await resIndustrial.json();
-        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataCargo = await resCargo.json();
 
         let hosp_len = dataHospitals.items.length;
@@ -482,15 +482,15 @@ const UpdateModal = ({ markerData, state, stateFunction, mode }) => {
         const lat = markerData.lat;
         const lng = markerData.lng;
         
-        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resHospitals = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=hospital&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataHospitals = await resHospitals.json();
-        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resPoliceStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=2000&q=police+station&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataPoliceStations = await resPoliceStations.json();
-        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resFireStations = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=fire+department&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataFireStations = await resFireStations.json();
-        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resIndustrial = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=industrial+zone&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataIndustrial = await resIndustrial.json();
-        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=XtQVI2v2Gva5boMgpLNShDE55F1dCyxN_vK_PyYhtWk`)
+        const resCargo = await fetch(`https://discover.search.hereapi.com/v1/discover?in=circle:` + lat + `,` + lng + `;r=5000&q=cargo+center&apiKey=SSVcA33wRwRdGElw8OrLCxm3IxZjzLO4m3EGzUZ5XQ0`)
         const dataCargo = await resCargo.json();
 
         let hosp_len = dataHospitals.items.length;
