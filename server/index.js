@@ -12,8 +12,8 @@ app.use(bodyparser.urlencoded({ extended: false }));
 
 const db = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "Roshan@4956",
+    user: "",
+    password: "",
     database: "here_hackathon",
     insecureAuth: true
 });
